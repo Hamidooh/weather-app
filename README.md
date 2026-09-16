@@ -1,4 +1,4 @@
-# Skyline Weather
+# Hamo Weather
 
 A dependency-free weather app using the Open-Meteo API.
 
