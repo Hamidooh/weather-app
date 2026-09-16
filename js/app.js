@@ -20,18 +20,37 @@
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const formatDay = (value, index) => index === 0 ? "Today" : dayNames[new Date(value).getDay()];
     const RECENT_CITY_KEY = "hamo-weather-recent-city";
+    const RECENT_LOCATION_KEY = "hamo-weather-recent-location";
 
     function getRecentCity() {
       try {
-        return sessionStorage.getItem(RECENT_CITY_KEY) || "Tokyo";
+        return sessionStorage.getItem(RECENT_CITY_KEY);
       } catch (error) {
-        return "Tokyo";
+        return null;
       }
     }
 
     function saveRecentCity(city) {
       try {
         sessionStorage.setItem(RECENT_CITY_KEY, city);
+        sessionStorage.removeItem(RECENT_LOCATION_KEY);
+      } catch (error) {
+        // Storage can be unavailable in restricted browser contexts.
+      }
+    }
+
+    function getRecentLocation() {
+      try {
+        const saved = sessionStorage.getItem(RECENT_LOCATION_KEY);
+        return saved ? JSON.parse(saved) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function saveRecentLocation(latitude, longitude) {
+      try {
+        sessionStorage.setItem(RECENT_LOCATION_KEY, JSON.stringify({ latitude, longitude }));
       } catch (error) {
         // Storage can be unavailable in restricted browser contexts.
       }
@@ -56,26 +75,55 @@
       }).join("");
     }
 
-    async function loadWeather(city) {
+    async function loadForecast(latitude, longitude, name, country = "") {
       $("message").textContent = "";
       $("message").className = "message";
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Forecast failed");
+        const forecast = await response.json();
+        render({ ...forecast, name, country });
+        return true;
+      } catch (error) {
+        render(fallback, true);
+        $("message").textContent = "Couldn’t reach the weather service, so a sample forecast is shown.";
+        $("message").className = "message error";
+        return false;
+      }
+    }
+
+    async function loadWeather(city) {
       try {
         const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
         if (!geoResponse.ok) throw new Error("Geocoding failed");
         const geo = await geoResponse.json();
         if (!geo.results?.length) throw new Error("City not found");
         const place = geo.results[0];
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Forecast failed");
-        const forecast = await response.json();
-        saveRecentCity(place.name);
-        render({ ...forecast, name: place.name, country: place.country });
+        const loaded = await loadForecast(place.latitude, place.longitude, place.name, place.country);
+        if (loaded) saveRecentCity(place.name);
       } catch (error) {
         render(fallback, true);
-        $("message").textContent = city.toLowerCase() === "tokyo" ? "Live data is unavailable, showing the Tokyo sample." : "Couldn’t reach the weather service, so a sample forecast is shown.";
+        $("message").textContent = city.toLowerCase() === "tokyo" ? "Live data is unavailable, showing the Tokyo sample." : "Couldn’t find that city, so the previous location was kept.";
         $("message").className = "message error";
       }
+    }
+
+    function loadCurrentLocation() {
+      if (!navigator.geolocation) {
+        loadWeather("Tokyo");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async ({ coords }) => {
+          saveRecentLocation(coords.latitude, coords.longitude);
+          const loaded = await loadForecast(coords.latitude, coords.longitude, "Your location");
+          if (!loaded) loadWeather("Tokyo");
+        },
+        () => loadWeather("Tokyo"),
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      );
     }
 
     $("searchForm").addEventListener("submit", (event) => {
@@ -83,6 +131,15 @@
       const city = $("cityInput").value.trim();
       if (city) loadWeather(city);
     });
-    const initialCity = getRecentCity();
     render(fallback);
-    loadWeather(initialCity);
+    const initialCity = getRecentCity();
+    if (initialCity) {
+      loadWeather(initialCity);
+    } else {
+      const recentLocation = getRecentLocation();
+      if (recentLocation) {
+        loadForecast(recentLocation.latitude, recentLocation.longitude, "Your location");
+      } else {
+        loadCurrentLocation();
+      }
+    }
