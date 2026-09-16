@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A polished weather forecast for any city.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E☼%3C/text%3E%3C/svg%3E">
+  <title>Skyline Weather</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">☼</span><span>Skyline Weather</span></div>
+      <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Live forecast</span></div>
+    </header>
+
+    <form class="search" id="searchForm" role="search">
+      <label class="sr-only" for="cityInput">Search for a city</label>
+      <input id="cityInput" type="search" autocomplete="off" placeholder="Search a city, e.g. Paris" aria-label="Search for a city">
+      <button type="submit">Search</button>
+    </form>
+
+    <section class="hero" aria-labelledby="cityName">
+      <div class="location">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span id="locationText">Tokyo, Japan</span>
+      </div>
+      <div class="hero-main">
+        <div>
+          <p class="eyebrow" id="dateText">Today</p>
+          <p class="temperature" id="temperature">--<sup>°C</sup></p>
+          <p class="condition" id="condition">Loading forecast…</p>
+        </div>
+        <div class="weather-icon" id="weatherIcon" aria-hidden="true">☁️</div>
+      </div>
+      <div class="details">
+        <div class="detail"><span class="detail-label">Feels like</span><span class="detail-value" id="feelsLike">--°</span></div>
+        <div class="detail"><span class="detail-label">Humidity</span><span class="detail-value" id="humidity">--%</span></div>
+        <div class="detail"><span class="detail-label">Wind</span><span class="detail-value" id="wind">-- km/h</span></div>
+      </div>
+    </section>
+
+    <section class="forecast-panel" aria-labelledby="forecastTitle">
+      <div class="section-heading"><h2 id="forecastTitle">5-day forecast</h2><span class="updated" id="updated">Fetching data</span></div>
+      <div class="forecast" id="forecast"></div>
+      <p class="message" id="message" role="status"></p>
+    </section>
+    <p class="footer">Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></p>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

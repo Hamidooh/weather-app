@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skyline Weather UI models</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px; color: #172238; background: #eef2f7; font: 14px/1.4 Inter, system-ui, sans-serif; }
+    h1 { margin: 0; font-size: 25px; letter-spacing: -.04em; }
+    .intro { max-width: 780px; margin: 0 auto 22px; }
+    .intro p { margin: 7px 0 0; color: #66748b; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 18px; max-width: 980px; margin: auto; }
+    .model { overflow: hidden; border: 1px solid #d8e0ec; border-radius: 18px; background: #fff; }
+    .model h2 { margin: 0; padding: 16px 18px 2px; font-size: 16px; }
+    .model > p { margin: 0; padding: 0 18px 13px; color: #6d7b90; font-size: 12px; }
+    .screen { min-height: 245px; padding: 18px; }
+    .mini-top { display: flex; justify-content: space-between; align-items: center; font-weight: 750; font-size: 12px; }
+    .mini-search { height: 27px; margin: 16px 0; padding: 6px 10px; border-radius: 8px; color: #8490a1; background: rgba(255,255,255,.7); font-size: 11px; }
+    .mini-hero { display: flex; justify-content: space-between; align-items: center; padding: 17px; border-radius: 15px; }
+    .city { font-size: 12px; font-weight: 700; }
+    .temp { margin-top: 6px; font-size: 43px; line-height: .9; font-weight: 800; letter-spacing: -.08em; }
+    .weather { font-size: 40px; }
+    .sub { margin-top: 8px; font-size: 11px; opacity: .72; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 9px; }
+    .metric { padding: 8px; border-radius: 9px; font-size: 10px; }
+    .metric b { display: block; margin-top: 2px; font-size: 12px; }
+    .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px; }
+    .day { padding: 8px 3px; border-radius: 8px; text-align: center; font-size: 10px; }
+    .day b { display: block; margin-top: 5px; }
+
+    .glass .screen { color: #edf5ff; background: linear-gradient(135deg, #275dcc, #71c7df); }
+    .glass .mini-search, .glass .metric, .glass .day { background: rgba(255,255,255,.17); }
+    .glass .mini-hero { background: rgba(6, 54, 139, .18); }
+    .glass .metrics { color: #fff; }
+
+    .minimal .screen { background: #fff; }
+    .minimal .mini-top { border-bottom: 1px solid #e6eaf0; padding-bottom: 12px; }
+    .minimal .mini-search { border: 1px solid #e4e8ee; background: #f8fafc; }
+    .minimal .mini-hero { padding: 15px 0; border-bottom: 1px solid #e7ebf0; border-radius: 0; }
+    .minimal .metric, .minimal .day { border: 1px solid #e6eaf0; background: #fafbfc; }
+    .minimal .weather { color: #3b7ced; }
+
+    .neon .screen { color: #e9f4ff; background: #0d1526; }
+    .neon .mini-search, .neon .metric, .neon .day { border: 1px solid #26395c; background: #131f37; }
+    .neon .mini-hero { border: 1px solid #355a9d; background: #16294e; }
+    .neon .temp, .neon .weather { color: #74c9ff; text-shadow: 0 0 15px rgba(80,190,255,.7); }
+    .neon .sub { color: #9db2d4; }
+
+    .editorial .screen { color: #20241f; background: #f5f0e6; }
+    .editorial .mini-top { font-family: Georgia, serif; font-size: 14px; }
+    .editorial .mini-search { border-bottom: 1px solid #c7c1b4; border-radius: 0; background: transparent; }
+    .editorial .mini-hero { padding: 15px 0; border-top: 2px solid #20241f; border-bottom: 1px solid #aaa394; border-radius: 0; }
+    .editorial .weather { color: #d47f42; }
+    .editorial .metric, .editorial .day { border-top: 1px solid #c7c1b4; border-radius: 0; background: transparent; }
+
+    @media (max-width: 680px) {
+      body { padding: 18px 12px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <h1>Skyline Weather · UI models</h1>
+    <p>Compare the visual directions below. The current app behavior stays the same; only the visual system changes.</p>
+  </header>
+
+  <main class="grid">
+    <article class="model glass">
+      <h2>01 · Modern glass</h2>
+      <p>Soft, polished, weather-first, and approachable.</p>
+      <div class="screen">
+        <div class="mini-top"><span>☼ Skyline Weather</span><span>● Live</span></div>
+        <div class="mini-search">Search a city …</div>
+        <div class="mini-hero"><div><div class="city">Tokyo, Japan</div><div class="temp">23°</div><div class="sub">Partly cloudy</div></div><div class="weather">⛅</div></div>
+        <div class="metrics"><div class="metric">Feels like<b>24°</b></div><div class="metric">Humidity<b>62%</b></div><div class="metric">Wind<b>11 km/h</b></div></div>
+        <div class="days"><div class="day">Today<b>26°</b></div><div class="day">Thu<b>27°</b></div><div class="day">Fri<b>24°</b></div><div class="day">Sat<b>22°</b></div><div class="day">Sun<b>25°</b></div></div>
+      </div>
+    </article>
+
+    <article class="model minimal">
+      <h2>02 · Minimal dashboard</h2>
+      <p>Quiet, clean, and focused on quick scanning.</p>
+      <div class="screen">
+        <div class="mini-top"><span>SKYLINE / WEATHER</span><span>Tokyo</span></div>
+        <div class="mini-search">⌕  Search city</div>
+        <div class="mini-hero"><div><div class="city">WEDNESDAY · TOKYO</div><div class="temp">23°</div><div class="sub">Partly cloudy · Feels like 24°</div></div><div class="weather">⛅</div></div>
+        <div class="metrics"><div class="metric">Humidity<b>62%</b></div><div class="metric">Wind<b>11 km/h</b></div><div class="metric">High / low<b>26° / 19°</b></div></div>
+        <div class="days"><div class="day">TODAY<b>26°</b></div><div class="day">THU<b>27°</b></div><div class="day">FRI<b>24°</b></div><div class="day">SAT<b>22°</b></div><div class="day">SUN<b>25°</b></div></div>
+      </div>
+    </article>
+
+    <article class="model neon">
+      <h2>03 · Dark neon</h2>
+      <p>High contrast, energetic, and distinctly digital.</p>
+      <div class="screen">
+        <div class="mini-top"><span>SKYLINE // 01</span><span>● ONLINE</span></div>
+        <div class="mini-search">ENTER LOCATION_</div>
+        <div class="mini-hero"><div><div class="city">TOKYO / JP</div><div class="temp">23°</div><div class="sub">PARTLY CLOUDY</div></div><div class="weather">⛅</div></div>
+        <div class="metrics"><div class="metric">FEELS LIKE<b>24°</b></div><div class="metric">HUMIDITY<b>62%</b></div><div class="metric">WIND<b>11 KM/H</b></div></div>
+        <div class="days"><div class="day">TODAY<b>26°</b></div><div class="day">THU<b>27°</b></div><div class="day">FRI<b>24°</b></div><div class="day">SAT<b>22°</b></div><div class="day">SUN<b>25°</b></div></div>
+      </div>
+    </article>
+
+    <article class="model editorial">
+      <h2>04 · Editorial</h2>
+      <p>Warm, expressive, and inspired by print weather pages.</p>
+      <div class="screen">
+        <div class="mini-top"><span>THE DAILY SKY</span><span>16 SEP 2026</span></div>
+        <div class="mini-search">Search the world's weather</div>
+        <div class="mini-hero"><div><div class="city">TOKYO, JAPAN</div><div class="temp">23°</div><div class="sub">A calm, partly cloudy day</div></div><div class="weather">⛅</div></div>
+        <div class="metrics"><div class="metric">FEELS LIKE<b>24°</b></div><div class="metric">HUMIDITY<b>62%</b></div><div class="metric">WIND<b>11 km/h</b></div></div>
+        <div class="days"><div class="day">TODAY<b>26°</b></div><div class="day">THU<b>27°</b></div><div class="day">FRI<b>24°</b></div><div class="day">SAT<b>22°</b></div><div class="day">SUN<b>25°</b></div></div>
+      </div>
+    </article>
+  </main>
+</body>
+</html>
