@@ -19,6 +19,23 @@
     const $ = (id) => document.getElementById(id);
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const formatDay = (value, index) => index === 0 ? "Today" : dayNames[new Date(value).getDay()];
+    const RECENT_CITY_KEY = "hamo-weather-recent-city";
+
+    function getRecentCity() {
+      try {
+        return sessionStorage.getItem(RECENT_CITY_KEY) || "Tokyo";
+      } catch (error) {
+        return "Tokyo";
+      }
+    }
+
+    function saveRecentCity(city) {
+      try {
+        sessionStorage.setItem(RECENT_CITY_KEY, city);
+      } catch (error) {
+        // Storage can be unavailable in restricted browser contexts.
+      }
+    }
 
     function render(data, isFallback = false) {
       const current = data.current, info = codeInfo[current.weather_code] || ["Variable conditions", "🌤️"];
@@ -52,6 +69,7 @@
         const response = await fetch(url);
         if (!response.ok) throw new Error("Forecast failed");
         const forecast = await response.json();
+        saveRecentCity(place.name);
         render({ ...forecast, name: place.name, country: place.country });
       } catch (error) {
         render(fallback, true);
@@ -65,5 +83,6 @@
       const city = $("cityInput").value.trim();
       if (city) loadWeather(city);
     });
+    const initialCity = getRecentCity();
     render(fallback);
-    loadWeather("Tokyo");
+    loadWeather(initialCity);
