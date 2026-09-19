@@ -96,6 +96,74 @@
       ].filter(Boolean).join(", ");
     }
 
+    function chooseBestAddress(results, query) {
+      const requested = normalizeLocationText(query);
+      const queryWords = requested.split(" ").filter((word) => word.length > 2);
+      return results
+        .map((place, index) => {
+          const address = place.address || {};
+          const searchable = normalizeLocationText([
+            place.display_name,
+            place.name,
+            address.amenity,
+            address.building,
+            address.road,
+            address.neighbourhood,
+            address.suburb,
+            address.town,
+            address.city,
+            address.county
+          ].filter(Boolean).join(" "));
+          const exact = normalizeLocationText(place.display_name) === requested;
+          const matchedWords = queryWords.filter((word) => searchable.includes(word)).length;
+          return { place, index, score: (exact ? 1000 : 0) + matchedWords * 20 };
+        })
+        .sort((a, b) => b.score - a.score || a.index - b.index)[0]?.place;
+    }
+
+    function formatAddressPlace(place) {
+      const address = place.address || {};
+      return [
+        place.name || address.neighbourhood || address.suburb || address.town || address.city,
+        address.suburb || address.town || address.city,
+        address.country
+      ].filter((value, index, values) => value && values.indexOf(value) === index).join(", ");
+    }
+
+    async function findLocation(query) {
+      const addressResponse = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q=${encodeURIComponent(query)}`
+      );
+      if (addressResponse.ok) {
+        const addresses = await addressResponse.json();
+        if (addresses.length) {
+          const place = chooseBestAddress(addresses, query);
+          return {
+            latitude: Number(place.lat),
+            longitude: Number(place.lon),
+            name: place.name || query,
+            country: place.address?.country || "",
+            label: formatAddressPlace(place) || place.display_name
+          };
+        }
+      }
+
+      const openMeteoResponse = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
+      );
+      if (!openMeteoResponse.ok) throw new Error("Location search failed");
+      const openMeteo = await openMeteoResponse.json();
+      if (!openMeteo.results?.length) throw new Error("Location not found");
+      const place = chooseBestPlace(openMeteo.results, query);
+      return {
+        latitude: place.latitude,
+        longitude: place.longitude,
+        name: place.name,
+        country: place.country,
+        label: formatPlaceName(place)
+      };
+    }
+
     function render(data, isFallback = false) {
       const current = data.current, info = codeInfo[current.weather_code] || ["Variable conditions", "🌤️"];
       $("locationText").textContent = data.locationLabel || `${data.name}, ${data.country || ""}`.replace(/, $/, "");
@@ -135,11 +203,7 @@
 
     async function loadWeather(city) {
       try {
-        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=en&format=json`);
-        if (!geoResponse.ok) throw new Error("Geocoding failed");
-        const geo = await geoResponse.json();
-        if (!geo.results?.length) throw new Error("City not found");
-        const place = chooseBestPlace(geo.results, city);
+        const place = await findLocation(city);
         const loaded = await loadForecast(
           place.latitude,
           place.longitude,
@@ -147,7 +211,7 @@
           place.country
         );
         if (loaded) {
-          $("locationText").textContent = formatPlaceName(place);
+          $("locationText").textContent = place.label;
         }
         if (loaded) saveRecentCity(city);
       } catch (error) {
