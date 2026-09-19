@@ -56,9 +56,49 @@
       }
     }
 
+    function normalizeLocationText(value) {
+      return value
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[^\w\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function chooseBestPlace(results, query) {
+      const requested = normalizeLocationText(query);
+      return results
+        .map((place, index) => {
+          const names = [
+            place.name,
+            place.admin1,
+            place.admin2,
+            place.admin3,
+            place.admin4
+          ].filter(Boolean).map(normalizeLocationText);
+          let score = 0;
+
+          if (names.includes(requested)) score += 100;
+          if (names.some((name) => name.startsWith(requested))) score += 35;
+          if (names.some((name) => name.includes(requested))) score += 20;
+          if (place.feature_code?.startsWith("PPL")) score += 10;
+
+          return { place, score, index };
+        })
+        .sort((a, b) => b.score - a.score || a.index - b.index)[0]?.place;
+    }
+
+    function formatPlaceName(place) {
+      return [
+        place.name,
+        place.admin1 && place.admin1 !== place.name ? place.admin1 : "",
+        place.country
+      ].filter(Boolean).join(", ");
+    }
+
     function render(data, isFallback = false) {
       const current = data.current, info = codeInfo[current.weather_code] || ["Variable conditions", "🌤️"];
-      $("locationText").textContent = `${data.name}, ${data.country || ""}`.replace(/, $/, "");
+      $("locationText").textContent = data.locationLabel || `${data.name}, ${data.country || ""}`.replace(/, $/, "");
       $("temperature").innerHTML = `${Math.round(current.temperature_2m)}<sup>°C</sup>`;
       $("condition").textContent = info[0];
       $("weatherIcon").textContent = info[1];
@@ -95,13 +135,21 @@
 
     async function loadWeather(city) {
       try {
-        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=en&format=json`);
         if (!geoResponse.ok) throw new Error("Geocoding failed");
         const geo = await geoResponse.json();
         if (!geo.results?.length) throw new Error("City not found");
-        const place = geo.results[0];
-        const loaded = await loadForecast(place.latitude, place.longitude, place.name, place.country);
-        if (loaded) saveRecentCity(place.name);
+        const place = chooseBestPlace(geo.results, city);
+        const loaded = await loadForecast(
+          place.latitude,
+          place.longitude,
+          place.name,
+          place.country
+        );
+        if (loaded) {
+          $("locationText").textContent = formatPlaceName(place);
+        }
+        if (loaded) saveRecentCity(city);
       } catch (error) {
         render(fallback, true);
         $("message").textContent = city.toLowerCase() === "tokyo" ? "Live data is unavailable, showing the Tokyo sample." : "Couldn’t find that city, so the previous location was kept.";
