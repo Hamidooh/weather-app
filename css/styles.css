@@ -307,12 +307,24 @@ h2 {
 .message.error { color: var(--accent-deep); }
 
 .footer {
+  width: fit-content;
   margin-top: 25px;
+  margin-right: auto;
+  margin-left: auto;
   text-align: center;
   color: var(--muted);
   font-size: 11px;
 }
 
+.footer summary {
+  cursor: pointer;
+  list-style: none;
+  opacity: .72;
+}
+
+.footer summary::-webkit-details-marker { display: none; }
+.footer summary::before { content: "ⓘ "; color: var(--accent); }
+.footer span { display: block; margin-top: 5px; }
 .footer a {
   color: var(--accent-deep);
   text-decoration: none;
