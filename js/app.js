@@ -55,37 +55,48 @@
       } catch (error) {
         // Storage can be unavailable in restricted browser contexts.
       }
+    }
 
-      window.addEventListener("beforeinstallprompt", (event) => {
-        event.preventDefault();
-        deferredInstallPrompt = event;
-        $("installButton").hidden = false;
-      });
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      $("installButton").hidden = false;
+    });
 
-      $("installButton").addEventListener("click", async () => {
-        if (!deferredInstallPrompt) return;
+    $("installButton").addEventListener("click", async () => {
+      if (!deferredInstallPrompt) {
+        $("message").textContent = "Use your browser menu and choose Install app or Add to Home screen.";
+        $("message").className = "message";
+        return;
+      }
+
+      try {
         deferredInstallPrompt.prompt();
         await deferredInstallPrompt.userChoice;
+      } catch (error) {
+        $("message").textContent = "Installation was cancelled or is not available in this browser.";
+        $("message").className = "message";
+      } finally {
         deferredInstallPrompt = null;
         $("installButton").hidden = true;
-      });
+      }
+    });
 
-      window.addEventListener("appinstalled", () => {
-        deferredInstallPrompt = null;
-        $("installButton").hidden = true;
-      });
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      $("installButton").hidden = true;
+    });
 
-      if ("serviceWorker" in navigator) {
-        const registerServiceWorker = () => {
-          navigator.serviceWorker.register("./service-worker.js").catch((error) => {
-            console.warn("Offline app support could not be enabled.", error);
-          });
-        };
-        if (document.readyState === "loading") {
-          window.addEventListener("load", registerServiceWorker, { once: true });
-        } else {
-          registerServiceWorker();
-        }
+    if ("serviceWorker" in navigator) {
+      const registerServiceWorker = () => {
+        navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+          console.warn("Offline app support could not be enabled.", error);
+        });
+      };
+      if (document.readyState === "loading") {
+        window.addEventListener("load", registerServiceWorker, { once: true });
+      } else {
+        registerServiceWorker();
       }
     }
 
