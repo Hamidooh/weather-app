@@ -76,11 +76,16 @@
       });
 
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
+        const registerServiceWorker = () => {
           navigator.serviceWorker.register("./service-worker.js").catch((error) => {
             console.warn("Offline app support could not be enabled.", error);
           });
-        });
+        };
+        if (document.readyState === "loading") {
+          window.addEventListener("load", registerServiceWorker, { once: true });
+        } else {
+          registerServiceWorker();
+        }
       }
     }
 
