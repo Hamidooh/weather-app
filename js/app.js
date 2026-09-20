@@ -22,6 +22,7 @@
     const RECENT_CITY_KEY = "hamo-weather-recent-city";
     const RECENT_LOCATION_KEY = "hamo-weather-recent-location";
     let deferredInstallPrompt = null;
+    let installPromptInProgress = false;
 
     function getRecentCity() {
       try {
@@ -57,35 +58,61 @@
       }
     }
 
+    function isRunningStandalone() {
+      return window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+    }
+
+    function showInstallGuidance() {
+      $("message").textContent = "Use your browser menu and choose Install app or Add to Home screen.";
+      $("message").className = "message";
+    }
+
     window.addEventListener("beforeinstallprompt", (event) => {
       event.preventDefault();
       deferredInstallPrompt = event;
-      $("installButton").hidden = false;
+      if (!isRunningStandalone()) {
+        $("installButton").hidden = false;
+      }
     });
 
     $("installButton").addEventListener("click", async () => {
+      if (installPromptInProgress) return;
       if (!deferredInstallPrompt) {
-        $("message").textContent = "Use your browser menu and choose Install app or Add to Home screen.";
-        $("message").className = "message";
+        showInstallGuidance();
         return;
       }
 
+      const promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      installPromptInProgress = true;
+      $("installButton").disabled = true;
+
       try {
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice?.outcome === "dismissed") {
+          $("message").textContent = "Installation was cancelled. You can try again from the browser menu.";
+          $("message").className = "message";
+        }
       } catch (error) {
-        $("message").textContent = "Installation was cancelled or is not available in this browser.";
-        $("message").className = "message";
+        showInstallGuidance();
       } finally {
-        deferredInstallPrompt = null;
+        installPromptInProgress = false;
+        $("installButton").disabled = false;
         $("installButton").hidden = true;
       }
     });
 
     window.addEventListener("appinstalled", () => {
       deferredInstallPrompt = null;
+      installPromptInProgress = false;
       $("installButton").hidden = true;
     });
+
+    if (isRunningStandalone()) {
+      $("installButton").hidden = true;
+    }
 
     if ("serviceWorker" in navigator) {
       const registerServiceWorker = () => {

@@ -21,7 +21,7 @@ The data-source attribution is kept in a compact disclosure at the bottom of the
 
 ## Install as an app
 
-Open the live site at https://hamidooh.github.io/weather-app/ in a supported browser. On desktop, use the install icon in the address bar or the app's **Install app** button when it appears. On Android, open the browser menu and choose **Install app** or **Add to Home screen**. On iPhone/iPad, open the site in Safari, tap **Share**, then choose **Add to Home Screen**.
+Open the live site at https://hamidooh.github.io/weather-app/ over HTTPS in a supported browser. On desktop Chromium browsers, use the install icon in the address bar or the app's **Install app** button when it appears. On Android, open the browser menu and choose **Install app** or **Add to Home screen**. On iPhone/iPad, open the site in Safari, tap **Share**, then choose **Add to Home Screen**. The browser controls whether the native prompt is available; the website cannot force an installation or download.
 
 The app shell can open offline after it has been visited, but live weather and location searches require an internet connection.
 
