@@ -21,6 +21,7 @@
     const formatDay = (value, index) => index === 0 ? "Today" : dayNames[new Date(value).getDay()];
     const RECENT_CITY_KEY = "hamo-weather-recent-city";
     const RECENT_LOCATION_KEY = "hamo-weather-recent-location";
+    let deferredInstallPrompt = null;
 
     function getRecentCity() {
       try {
@@ -53,6 +54,33 @@
         sessionStorage.setItem(RECENT_LOCATION_KEY, JSON.stringify({ latitude, longitude }));
       } catch (error) {
         // Storage can be unavailable in restricted browser contexts.
+      }
+
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        $("installButton").hidden = false;
+      });
+
+      $("installButton").addEventListener("click", async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        $("installButton").hidden = true;
+      });
+
+      window.addEventListener("appinstalled", () => {
+        deferredInstallPrompt = null;
+        $("installButton").hidden = true;
+      });
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+            console.warn("Offline app support could not be enabled.", error);
+          });
+        });
       }
     }
 

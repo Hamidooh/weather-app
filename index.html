@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A polished weather forecast for any city.">
+  <meta name="theme-color" content="#252922">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E☼%3C/text%3E%3C/svg%3E">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Hamo Weather</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -12,7 +14,10 @@
   <main class="app">
     <header class="topbar">
       <div class="brand"><span class="brand-mark">☼</span><span>Hamo Weather</span></div>
-      <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Live forecast</span></div>
+      <div class="top-actions">
+        <button class="install-button" id="installButton" type="button" hidden>Install app</button>
+        <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Live forecast</span></div>
+      </div>
     </header>
 
     <form class="search" id="searchForm" role="search">

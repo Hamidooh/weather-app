@@ -52,6 +52,10 @@ body {
   border-bottom: 2px solid var(--ink);
 }
 
+.top-actions { display: flex; gap: 13px; align-items: center; }
+.install-button { display: inline-block; padding: 6px 9px; color: var(--ink); border: 1px solid var(--rule); background: transparent; font-size: 10px; }
+.install-button:hover { color: var(--paper); border-color: var(--ink); background: var(--ink); transform: none; }
+
 .brand {
   display: flex;
   gap: 10px;
@@ -335,7 +339,8 @@ h2 {
   .app { width: min(100% - 24px, 700px); padding-top: 22px; }
   .topbar { align-items: flex-start; }
   .brand { font-size: 18px; }
-  .status { margin-top: 5px; }
+  .top-actions { gap: 8px; flex-direction: column-reverse; align-items: flex-end; }
+  .status { margin-top: 0; }
   .hero-main { align-items: flex-start; }
   .weather-icon { margin-top: 7px; }
   .details { gap: 0; }
