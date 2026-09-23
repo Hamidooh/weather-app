@@ -21,6 +21,7 @@
     const formatDay = (value, index) => index === 0 ? "Today" : dayNames[new Date(value).getDay()];
     const RECENT_CITY_KEY = "hamo-weather-recent-city";
     const RECENT_LOCATION_KEY = "hamo-weather-recent-location";
+    const APP_INSTALLED_KEY = "hamo-weather-app-installed";
     let deferredInstallPrompt = null;
     let installPromptInProgress = false;
 
@@ -63,6 +64,28 @@
         window.navigator.standalone === true;
     }
 
+    function hasBeenInstalled() {
+      if (isRunningStandalone()) return true;
+      try {
+        return localStorage.getItem(APP_INSTALLED_KEY) === "true";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function rememberInstallation() {
+      try {
+        localStorage.setItem(APP_INSTALLED_KEY, "true");
+      } catch (error) {
+        // Storage can be unavailable in restricted browser contexts.
+      }
+    }
+
+    function hideInstallButton() {
+      $("installButton").hidden = true;
+      $("installButton").disabled = false;
+    }
+
     function showInstallGuidance() {
       $("message").textContent = "Use your browser menu and choose Install app or Add to Home screen.";
       $("message").className = "message";
@@ -70,8 +93,13 @@
 
     window.addEventListener("beforeinstallprompt", (event) => {
       event.preventDefault();
+      if (hasBeenInstalled()) {
+        deferredInstallPrompt = null;
+        hideInstallButton();
+        return;
+      }
       deferredInstallPrompt = event;
-      if (!isRunningStandalone()) {
+      if (!hasBeenInstalled()) {
         $("installButton").hidden = false;
       }
     });
@@ -91,7 +119,9 @@
       try {
         await promptEvent.prompt();
         const choice = await promptEvent.userChoice;
-        if (choice?.outcome === "dismissed") {
+        if (choice?.outcome === "accepted") {
+          rememberInstallation();
+        } else if (choice?.outcome === "dismissed") {
           $("message").textContent = "Installation was cancelled. You can try again from the browser menu.";
           $("message").className = "message";
         }
@@ -99,19 +129,19 @@
         showInstallGuidance();
       } finally {
         installPromptInProgress = false;
-        $("installButton").disabled = false;
-        $("installButton").hidden = true;
+        hideInstallButton();
       }
     });
 
     window.addEventListener("appinstalled", () => {
+      rememberInstallation();
       deferredInstallPrompt = null;
       installPromptInProgress = false;
-      $("installButton").hidden = true;
+      hideInstallButton();
     });
 
-    if (isRunningStandalone()) {
-      $("installButton").hidden = true;
+    if (hasBeenInstalled()) {
+      hideInstallButton();
     }
 
     if ("serviceWorker" in navigator) {
