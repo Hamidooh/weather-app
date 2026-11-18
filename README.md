@@ -7,9 +7,9 @@ A dependency-free weather app using the Open-Meteo API.
 - `index.html` - page structure and app entry point
 - `css/styles.css` - responsive styling and light/dark theme
 - `js/app.js` - city search, API requests, rendering, and fallback data
-- `manifest.webmanifest` - install metadata for supported browsers
+- `manifest.webmanifest` - install metadata for supported browsers.
 - `service-worker.js` - offline app-shell cache
-- `icons/` - local Hamo Weather app icons
+- `icons/` - local Hamo Weather app icons.
 
 ## Run locally
 
